@@ -114,6 +114,8 @@ a{color:inherit;text-decoration:none}
 #stage.dark .tile .glow{background:var(--blue)}
 .tile.sel .glow{opacity:1;transform:none;transition:opacity .16s,transform .22s cubic-bezier(.3,1.6,.5,1)}
 .spin{position:absolute;inset:-50%;animation:spin 7s linear infinite}
+#stage.portrait .spin{animation-duration:36s}
+#stage.portrait .tile .glow .spin i{filter:blur(calc(var(--t) * .22))}
 #stage.dark .spin{display:none}
 .spin i{position:absolute;width:50%;height:50%;border-radius:50%;filter:blur(60px)}
 .spin i:nth-child(1){left:50%;top:0;background:#ff66b8}
@@ -451,7 +453,13 @@ body.dark:has(#stage.albumpage){background:#343434}
 #stage.portrait .time span{font-size:36px}
 #stage.portrait .ctrl{left:44px;bottom:calc(28px + var(--safe-b))}
 #stage.portrait .hints{right:40px;bottom:calc(32px + var(--safe-b));gap:28px}
-#stage.portrait .hdiv{left:48px;right:48px;bottom:calc(128px + var(--safe-b))}
+#stage.portrait .hdiv{display:none}
+#stage.portrait #chrome::before{content:"";position:absolute;left:0;right:0;bottom:0;height:calc(250px + var(--safe-b));z-index:0;pointer-events:none;background:linear-gradient(to bottom, transparent, var(--bg) 48%)}
+#stage.portrait #chrome>*{z-index:1}
+#stage.portrait.albumpage #chrome::before{background:linear-gradient(to bottom, transparent, #ececec 48%)}
+#stage.dark.portrait.albumpage #chrome::before{background:linear-gradient(to bottom, transparent, #343434 48%)}
+#stage.portrait.userpage #chrome::before{background:linear-gradient(to bottom, transparent, #fff 48%)}
+#stage.dark.portrait.userpage #chrome::before{background:linear-gradient(to bottom, transparent, #2a2a2a 48%)}
 #stage.portrait #home,
 #stage.portrait #home .row,
 #stage.portrait .tile{touch-action:none}
@@ -465,6 +473,9 @@ body.dark:has(#stage.albumpage){background:#343434}
 #stage.portrait .mi .lbl{font-size:42px;bottom:calc(100% + 28px)}
 #stage.portrait .box{left:0;top:0;width:100%;height:100%}
 #stage.portrait .scroll{top:calc(210px + var(--safe-t));bottom:calc(168px + var(--safe-b));overflow-y:auto;overflow-x:hidden;padding:8px 52px 56px;scrollbar-width:none;touch-action:pan-y;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#stage.portrait #experience .scroll,
+#stage.portrait #research .scroll,
+#stage.portrait #projects .scroll{touch-action:none}
 #stage.portrait.userpage .scroll{top:calc(36px + var(--safe-t))}
 #stage.portrait .scroll-hint{bottom:calc(176px + var(--safe-b));width:80px;height:64px;margin-left:-40px}
 #stage.portrait .scroll::-webkit-scrollbar{display:none}
@@ -478,13 +489,17 @@ body.dark:has(#stage.albumpage){background:#343434}
 #stage.portrait .detail .foot{margin-top:36px;justify-content:flex-start;flex-wrap:wrap}
 #stage.portrait #projects{overflow:hidden;padding:0}
 #stage.portrait .resume-body{grid-column:2;min-width:0}
-#stage.portrait .resume-body.has-side{display:flex;flex-direction:column;gap:14px}
-#stage.portrait .resume-body.has-side>p{min-width:0}
-#stage.portrait .proj-mini,#stage.portrait .proj-shots{grid-column:auto;grid-row:auto;width:100%;min-width:0;max-width:100%;margin-top:4px}
-#stage.portrait video.proj-mini{height:auto;display:block}
-#stage.portrait .proj-shotrow{min-width:0}
-#stage.portrait .proj-shotrow img{height:auto;max-height:520px;min-width:0}
-#stage.portrait .proj-shots>span:last-child{font-size:32px;line-height:1.3}
+#stage.portrait #projects .resume-row{display:grid;grid-template-columns:220px minmax(0,1fr);column-gap:28px;align-items:start;margin-bottom:64px}
+#stage.portrait #projects .resume-when{display:block;font-size:26px;line-height:1.35;white-space:normal;padding-top:6px;margin:0}
+#stage.portrait #projects .resume-tx{display:block;min-width:0}
+#stage.portrait #projects .resume-body{display:block;grid-column:2;margin-top:0}
+#stage.portrait #projects .resume-body.has-side{display:grid;grid-template-columns:minmax(0,1fr) 230px;column-gap:22px;align-items:start}
+#stage.portrait #projects .resume-body.has-side>p{grid-column:1;min-width:0}
+#stage.portrait #projects .proj-mini,#stage.portrait #projects .proj-shots{grid-column:2;grid-row:1;width:100%;min-width:0;max-width:none;margin-top:14px}
+#stage.portrait #projects video.proj-mini{height:auto;aspect-ratio:16/9;object-fit:contain}
+#stage.portrait #projects .proj-shotrow{min-width:0}
+#stage.portrait #projects .proj-shotrow img{height:auto;max-height:none;min-width:0}
+#stage.portrait #projects .proj-shots>span:last-child{font-size:22px;line-height:1.3}
 #stage.portrait .info>*{position:static}
 #stage.portrait .info h2{font-size:64px;white-space:normal}
 #stage.portrait .info .role{margin-top:6px}
@@ -525,6 +540,7 @@ body.dark:has(#stage.albumpage){background:#343434}
 #stage.portrait .resume-body{display:block;grid-column:auto;margin-top:10px}
 #stage.portrait .resume-body p{font-size:34px;line-height:50px}
 #stage.portrait .stack .av{width:64px;height:64px;margin-left:-18px}
+#stage.portrait .stack .av:first-child{margin-left:0}
 #stage.portrait .with-t{font-size:36px;white-space:normal}
 #stage.portrait .resume-tx span{font-size:36px;line-height:1.35}
 #stage.portrait .ps-bg{display:none}
@@ -579,9 +595,7 @@ body.dark:has(#stage.albumpage){background:#343434}
 #stage.portrait .album-title{font-size:56px;gap:16px}
 #stage.portrait .album-title svg{width:56px;height:56px}
 #stage.portrait .album-count{font-size:40px}
-#stage.portrait .album-grid{grid-template-columns:repeat(3,1fr);gap:8px;padding:8px 0 28px;overflow-y:auto;-webkit-overflow-scrolling:touch}
-#stage.portrait .gal-frame{aspect-ratio:1;border-radius:6px}
-#stage.portrait .gal-frame.sel{box-shadow:none}
+#stage.portrait .album-grid{grid-template-columns:repeat(3,1fr);gap:18px;padding:10px 6px 40px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #stage.portrait .viewer-x{top:calc(28px + var(--safe-t));right:calc(28px + var(--safe-r));width:120px;height:120px}
 #stage.portrait .viewer-x svg{width:46px;height:46px}
 #stage.portrait .viewer-cap{font-size:38px}
@@ -652,7 +666,7 @@ body.dark:has(#stage.albumpage){background:#343434}
     </div>
   </div><button class="scroll-hint" type="button" aria-label="Scroll down"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></section>
 
-  <!-- ===== About Me — photo gallery ===== -->
+  <!-- ===== My Life — photo gallery ===== -->
   <section id="gallery" class="screen" aria-label="Album">
     <div class="album">
       <div class="album-head">
@@ -721,7 +735,7 @@ const TILES = [
   { id:'experience', title:'Experience', img:'assets/podium.jpg', pos:'height:165.52%;left:-6.02%;top:-61.08%;width:114.29%' },
   { id:'research',   title:'Research',   img:'assets/poster.jpg', pos:'height:103.09%;left:-33.31%;top:-3.38%;width:133.33%' },
   { id:'projects',   title:'Projects',   img:'assets/projects.jpg', pos:'height:106%;width:128%;left:-22%;top:-3%' },
-  { id:'gallery',    title:'About Me',   img:'assets/friends.jpg', cover:true },
+  { id:'gallery',    title:'My Life',    img:'assets/friends.jpg', cover:true },
   { ph:true }, { ph:true }
 ];
 
@@ -831,7 +845,7 @@ const PROJECTS = [
     desc:'An iOS app that turns product photos into 3D models with Microsoft Trellis and places the furniture in your room with AR. Swift, ARKit, and RoomPlan on the phone, Python on the backend.' }
 ];
 
-/* About Me album. pos is the crop anchor inside each 16:9 cell. */
+/* My Life album. pos is the crop anchor inside each 16:9 cell. */
 const GALLERY = [
   { src:'assets/gallery/cmu.jpg',          cap:'Carnegie Mellon', pos:'70% 42%' },
   { src:'assets/gallery/office-bar.jpg',   cap:'The Office Bar',  pos:'center 64%' },
@@ -962,10 +976,15 @@ function layoutPortraitHome(safe){
 }
 function fit(){
   const vp=viewportBox(), vw=vp.w, vh=vp.h, ar=vw/Math.max(1,vh);
-  PORTRAIT = ar < .9;
-  if(PORTRAIT){ W=1080; H=Math.max(1400, Math.round(1080/ar)); }
-  else if(ar >= 16/9){ H=1080; W=Math.round(1080*ar); }
-  else { W=1920; H=Math.round(1920/ar); }
+  const portrait = ar < .9;
+  let W2, H2;
+  if(portrait){ W2=1080; H2=Math.max(1400, Math.round(1080/ar)); }
+  else if(ar >= 16/9){ H2=1080; W2=Math.round(1080*ar); }
+  else { W2=1920; H2=Math.round(1920/ar); }
+  const key=portrait+'|'+W2+'x'+H2+'|'+Math.round(vw)+'x'+Math.round(vh)+'|'+Math.round(vp.x)+','+Math.round(vp.y);
+  if(key===fit.key) return;
+  fit.key=key;
+  PORTRAIT = portrait; W=W2; H=H2;
   const s = vw/W;
   stage.style.width=W+'px'; stage.style.height=H+'px';
   stage.style.transform=`scale(${s})`;
@@ -1072,6 +1091,9 @@ function homeOk(){
 }
 function openTile(i){
   const t=TILES[i]; if(!t||t.ph) return;
+  if(openTile.busy) return;
+  openTile.busy=true;
+  setTimeout(()=>{ openTile.busy=false; }, 500);
   const el=tiles[i]; el.classList.remove('press'); void el.offsetWidth; el.classList.add('press');
   SFX.open(); buzz(10);
   setTimeout(()=>openScreen(t.id), 170);
@@ -1120,8 +1142,8 @@ function moveRowDrag(clientX, clientY){
   if(clientX===rowDrag.lx && clientY===rowDrag.ly) return rowDrag.moved;
   const dx=clientX-rowDrag.x, dy=clientY-rowDrag.y;
   if(!rowDrag.moved){
-    if(Math.abs(dx)<8 && Math.abs(dy)<8) return false;
-    if(Math.abs(dy)>Math.abs(dx)*1.15){ rowDrag=null; row.style.transition=''; return false; }
+    if(Math.hypot(dx,dy)<56) return false;
+    if(Math.abs(dx)<Math.abs(dy)*1.2) return false;
     rowDrag.moved=true;
   }
   const now=performance.now();
@@ -1144,9 +1166,10 @@ function finishRowDrag(clientX, clientY){
   row.style.transition='';
   void row.offsetWidth;
   const dx=clientX-d.x, dy=clientY-d.y;
+  const tap=!d.moved || Math.hypot(dx,dy)<80;
   suppressHomeClick=true;
   setTimeout(()=>{ suppressHomeClick=false; }, 450);
-  if(!d.moved || Math.hypot(dx,dy)<26){
+  if(tap){
     const tile=d.tile;
     row._x=d.ox;
     row.style.transition='none';
@@ -1197,7 +1220,6 @@ homeEl.addEventListener('pointerdown', e=>{
   stopRowCoast();
   rowDrag={id:e.pointerId, x:e.clientX, y:e.clientY, lx:e.clientX, ly:e.clientY, lt:performance.now(), ox:row._x||0, scale, moved:false, v:0, hist:[{x:e.clientX,t:performance.now()}], tile:e.target.closest('.tile'), start:S.tile};
   row.style.transition='none';
-  try{ homeEl.setPointerCapture(e.pointerId); }catch(_){}
 });
 homeEl.addEventListener('pointermove', e=>{
   if(!rowDrag || rowDrag.id!==e.pointerId) return;
@@ -1221,7 +1243,17 @@ homeEl.addEventListener('touchend', e=>{
   const t=e.changedTouches[0];
   finishRowDrag(t?t.clientX:rowDrag.lx, t?t.clientY:rowDrag.ly);
 });
-homeEl.addEventListener('touchcancel', ()=>{ if(!rowDrag) return; rowDrag=null; row.style.transition=''; updateRow(); });
+homeEl.addEventListener('touchcancel', ()=>{
+  if(!rowDrag) return;
+  const d=rowDrag; rowDrag=null;
+  const tile=d.tile;
+  if(tile && !tile.classList.contains('ph') && !d.moved){
+    S.zone='tiles'; S.tile=+tile.dataset.i;
+    openTile(S.tile);
+    return;
+  }
+  row.style.transition=''; updateRow();
+});
 stage.addEventListener('pointerdown', e=>{
   if(S.screen!=='home' || e.button>0) return;
   homePtr={x:e.clientX, y:e.clientY, id:e.pointerId, t:performance.now(), ui:!!e.target.closest('.menu, #profile, .hints, .ctrl, #row')};
@@ -1401,6 +1433,59 @@ function pageScroll(sel,d){
   if((d>0&&box.scrollTop>=max-1)||(d<0&&box.scrollTop<=0)){ SFX.bonk(); return; }
   SFX.move(); box.scrollBy({top:d*220, behavior:'smooth'});
 }
+function bindCoast(box){
+  let g=null, raf=0;
+  const stop=()=>{ if(raf){ cancelAnimationFrame(raf); raf=0; } };
+  box.addEventListener('touchstart', e=>{
+    if(!PORTRAIT || e.touches.length!==1) return;
+    stop();
+    const t=e.touches[0];
+    g={x:t.clientX,y:t.clientY,top:box.scrollTop,hist:[],go:0};
+  }, {passive:true});
+  box.addEventListener('touchmove', e=>{
+    if(!g || !e.touches[0]) return;
+    const t=e.touches[0];
+    const dx=t.clientX-g.x, dy=t.clientY-g.y;
+    if(!g.go){
+      if(Math.hypot(dx,dy)<8) return;
+      if(Math.abs(dx)>Math.abs(dy)){ g=null; return; }
+      g.go=1;
+    }
+    e.preventDefault();
+    const scale=(stage.getBoundingClientRect().height/H)||1;
+    const max=Math.max(0, box.scrollHeight-box.clientHeight);
+    box.scrollTop=Math.max(0, Math.min(max, g.top-(t.clientY-g.y)/scale));
+    const now=performance.now();
+    g.hist.push({y:t.clientY,t:now});
+    g.hist=g.hist.filter(s=>now-s.t<100);
+  }, {passive:false});
+  box.addEventListener('touchend', ()=>{
+    if(!g || !g.go){ g=null; return; }
+    const hist=g.hist; g=null;
+    let v=0;
+    if(hist.length>=2){
+      const a=hist[0], b=hist[hist.length-1], dt=b.t-a.t;
+      if(dt>8) v=(a.y-b.y)/dt;
+    }
+    const scale=(stage.getBoundingClientRect().height/H)||1;
+    v/=scale;
+    if(Math.abs(v)<0.05) return;
+    let last=performance.now();
+    const step=(now)=>{
+      const dt=Math.min(32, now-last); last=now;
+      const max=Math.max(0, box.scrollHeight-box.clientHeight);
+      let top=box.scrollTop+v*dt;
+      if(top<=0){ top=0; v=0; }
+      else if(top>=max){ top=max; v=0; }
+      box.scrollTop=top;
+      v*=Math.pow(0.994, dt);
+      if(v && Math.abs(v)>0.02) raf=requestAnimationFrame(step);
+      else raf=0;
+    };
+    raf=requestAnimationFrame(step);
+  }, {passive:true});
+  box.addEventListener('touchcancel', ()=>{ g=null; stop(); });
+}
 function peopleHTML(people){
   if(!people||!people.length) return '';
   const av=p=>{
@@ -1547,9 +1632,12 @@ function renderGallery(){
 }
 
 buildExp(); buildResearch(); buildProjects(); buildAbout(); buildGallery();
+['#experience','#research','#projects'].forEach(id=>{ const box=$(id+' .scroll'); if(box) bindCoast(box); });
 
+let openedAt=0;
 function openScreen(id){
   if(!$('#'+id) || S.screen===id) return;
+  openedAt=performance.now();
   navGen++;
   S.screen=id; setRed(false); stage.classList.toggle('userpage', id==='about'); stage.classList.remove('newspage'); stage.classList.toggle('albumpage', id==='gallery'); $('#hintLR').hidden = true;
   setBackHint(false, id==='about' ? 'Back' : 'Return Back');
@@ -1910,7 +1998,7 @@ stage.addEventListener('click', e=>{
 });
 
 /* hints */
-$('#hintBack').addEventListener('click', ()=>{ SFX.init(); if($('#hintBack').dataset.mode==='mute'){ toggleMute(); return; } back(); });
+$('#hintBack').addEventListener('click', ()=>{ SFX.init(); if(performance.now()-openedAt<600) return; if($('#hintBack').dataset.mode==='mute'){ toggleMute(); return; } back(); });
 $('#hintOk').addEventListener('click', ()=>{ SFX.init(); ok(); });
 $('#hintLR').addEventListener('click', ()=>{ SFX.init(); });
 
@@ -1968,7 +2056,11 @@ requestAnimationFrame(pollPad);
 /* swipe back on touch (detail screens) */
 let sx=0, sy=0;
 stage.addEventListener('touchstart', e=>{ sx=e.touches[0].clientX; sy=e.touches[0].clientY; }, {passive:true});
-stage.addEventListener('touchend', e=>{ const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy; if(sx<40 && dx>90 && Math.abs(dy)<60 && S.screen!=='home' && S.screen!=='sleep') back(); }, {passive:true});
+stage.addEventListener('touchend', e=>{
+  if(performance.now()-openedAt<700) return;
+  const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+  if(sx<24 && dx>140 && Math.abs(dy)<70 && S.screen!=='home' && S.screen!=='sleep') back();
+}, {passive:true});
 
 /* boot — open on the home screen */
 fit(); showHome(true); sleepFace(false);
