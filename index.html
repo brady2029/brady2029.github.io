@@ -114,7 +114,7 @@ a{color:inherit;text-decoration:none}
 #stage.dark .tile .glow{background:var(--blue)}
 .tile.sel .glow{opacity:1;transform:none;transition:opacity .16s,transform .22s cubic-bezier(.3,1.6,.5,1)}
 .spin{position:absolute;inset:-50%;animation:spin 7s linear infinite}
-#stage.portrait .spin{animation-duration:18s}
+#stage.portrait .spin{animation-duration:36s}
 #stage.portrait .tile .spin i{filter:blur(90px)}
 #stage.dark .spin{display:none}
 .spin i{position:absolute;width:50%;height:50%;border-radius:50%;filter:blur(60px)}
@@ -454,8 +454,10 @@ body.dark:has(#stage.albumpage){background:#343434}
 #stage.portrait .ctrl{left:44px;bottom:calc(28px + var(--safe-b))}
 #stage.portrait .hints{right:40px;bottom:calc(32px + var(--safe-b));gap:28px}
 #stage.portrait .hdiv{left:48px;right:48px;bottom:calc(128px + var(--safe-b))}
-#stage.portrait #home{touch-action:pan-y}
-#stage.portrait #home .row{left:56px;top:var(--row-top, 640px);touch-action:none}
+#stage.portrait #home,
+#stage.portrait #home .row,
+#stage.portrait .tile{touch-action:none}
+#stage.portrait #home .row{left:56px;top:var(--row-top, 640px)}
 #stage.portrait .tile .ttl{font-size:52px;top:-78px;letter-spacing:-1.2px}
 #stage.portrait .menu{top:var(--menu-top, 1360px);width:calc(100% - 36px);flex-wrap:nowrap;justify-content:center;gap:0 8px;padding:14px 12px;border-radius:70px}
 #stage.portrait .menu .grp{display:contents}
@@ -1084,39 +1086,37 @@ function previewTile(i){
   tiles.forEach((el,k)=>el.classList.toggle('sel', k===i));
   menuItems.forEach(el=>el.classList.remove('sel'));
 }
-row.addEventListener('pointerdown', e=>{
-  if(!PORTRAIT || S.screen!=='home' || e.button>0) return;
-  const scale=(stage.getBoundingClientRect().width/W)||1;
-  rowDrag={id:e.pointerId, x:e.clientX, y:e.clientY, ox:row._x||0, scale, moved:false, tile:e.target.closest('.tile'), start:S.tile};
-  row.style.transition='none';
-  try{ row.setPointerCapture(e.pointerId); }catch(_){}
-}, {passive:true});
-row.addEventListener('pointermove', e=>{
-  if(!rowDrag || rowDrag.id!==e.pointerId) return;
-  const dx=e.clientX-rowDrag.x, dy=e.clientY-rowDrag.y;
+function moveRowDrag(clientX, clientY){
+  if(!rowDrag) return false;
+  if(clientX===rowDrag.lx && clientY===rowDrag.ly) return rowDrag.moved;
+  const dx=clientX-rowDrag.x, dy=clientY-rowDrag.y;
   if(!rowDrag.moved){
-    if(Math.abs(dx)<12 && Math.abs(dy)<12) return;
-    if(Math.abs(dy)>Math.abs(dx)){ rowDrag=null; row.style.transition=''; try{ row.releasePointerCapture(e.pointerId); }catch(_){} return; }
+    if(Math.abs(dx)<10 && Math.abs(dy)<10) return false;
+    if(Math.abs(dy)>Math.abs(dx)*1.15){ rowDrag=null; row.style.transition=''; return false; }
     rowDrag.moved=true;
   }
+  const now=performance.now(), dt=Math.max(1, now-rowDrag.lt);
+  rowDrag.v=(clientX-rowDrag.lx)/dt*0.7+rowDrag.v*0.3;
+  rowDrag.lx=clientX; rowDrag.ly=clientY; rowDrag.lt=now;
   const span=rowSpan();
-  const x=Math.max(span.min-90, Math.min(span.max+90, rowDrag.ox+dx/rowDrag.scale));
+  const x=Math.max(span.min-140, Math.min(span.max+140, rowDrag.ox+dx/rowDrag.scale));
   row._x=x;
   row.style.transform=`translateX(${x}px)`;
   previewTile(nearestTile(x));
-}, {passive:true});
-function endRowDrag(e){
-  if(!rowDrag || (e && rowDrag.id!==e.pointerId)) return;
+  return true;
+}
+function finishRowDrag(clientX, clientY){
+  if(!rowDrag) return;
   const d=rowDrag; rowDrag=null;
-  if(e) try{ row.releasePointerCapture(e.pointerId); }catch(_){}
+  try{ homeEl.releasePointerCapture(d.id); }catch(_){}
   row.style.transition='none';
   void row.offsetWidth;
   row.style.transition='';
   void row.offsetWidth;
-  const dx=e?e.clientX-d.x:0, dy=e?e.clientY-d.y:0;
+  const dx=clientX-d.x, dy=clientY-d.y;
   suppressHomeClick=true;
   setTimeout(()=>{ suppressHomeClick=false; }, 450);
-  if(!d.moved && Math.hypot(dx,dy)<16){
+  if(!d.moved && Math.hypot(dx,dy)<14){
     const tile=d.tile;
     if(tile && !tile.classList.contains('ph')){
       S.zone='tiles'; S.tile=+tile.dataset.i;
@@ -1127,13 +1127,46 @@ function endRowDrag(e){
     updateRow();
     return;
   }
-  const best=nearestTile(row._x||0);
+  const span=rowSpan(), pitch=span.t+span.g;
+  const coast=Math.max(-pitch*2.6, Math.min(pitch*2.6, (d.v||0)/d.scale*520));
+  const projected=Math.max(span.min, Math.min(span.max, (row._x||0)+coast));
+  const best=nearestTile(projected);
   S.zone='tiles'; S.tile=best;
   renderSel();
   if(best!==d.start) SFX.move();
 }
-row.addEventListener('pointerup', endRowDrag);
-row.addEventListener('pointercancel', ()=>{ rowDrag=null; row.style.transition=''; updateRow(); });
+const homeEl=$('#home');
+homeEl.addEventListener('pointerdown', e=>{
+  if(!PORTRAIT || S.screen!=='home' || e.button>0) return;
+  if(e.target.closest('.menu, #profile, .hints, .ctrl')) return;
+  const scale=(stage.getBoundingClientRect().width/W)||1;
+  rowDrag={id:e.pointerId, x:e.clientX, y:e.clientY, lx:e.clientX, ly:e.clientY, lt:performance.now(), ox:row._x||0, scale, moved:false, v:0, tile:e.target.closest('.tile'), start:S.tile};
+  row.style.transition='none';
+  try{ homeEl.setPointerCapture(e.pointerId); }catch(_){}
+});
+homeEl.addEventListener('pointermove', e=>{
+  if(!rowDrag || rowDrag.id!==e.pointerId) return;
+  moveRowDrag(e.clientX, e.clientY);
+});
+homeEl.addEventListener('pointerup', e=>{
+  if(!rowDrag || rowDrag.id!==e.pointerId) return;
+  finishRowDrag(e.clientX, e.clientY);
+});
+homeEl.addEventListener('pointercancel', e=>{
+  if(e.pointerType==='touch' || !rowDrag) return;
+  rowDrag=null; row.style.transition=''; updateRow();
+});
+homeEl.addEventListener('touchmove', e=>{
+  if(!rowDrag) return;
+  const t=e.touches[0]; if(!t) return;
+  if(moveRowDrag(t.clientX, t.clientY)) e.preventDefault();
+}, {passive:false});
+homeEl.addEventListener('touchend', e=>{
+  if(!rowDrag) return;
+  const t=e.changedTouches[0];
+  finishRowDrag(t?t.clientX:rowDrag.lx, t?t.clientY:rowDrag.ly);
+});
+homeEl.addEventListener('touchcancel', ()=>{ if(!rowDrag) return; rowDrag=null; row.style.transition=''; updateRow(); });
 stage.addEventListener('pointerdown', e=>{
   if(S.screen!=='home' || e.button>0) return;
   homePtr={x:e.clientX, y:e.clientY, id:e.pointerId, t:performance.now(), ui:!!e.target.closest('.menu, #profile, .hints, .ctrl, #row')};
@@ -1142,7 +1175,7 @@ stage.addEventListener('pointerup', e=>{
   if(!homePtr || homePtr.id!==e.pointerId) return;
   const dx=e.clientX-homePtr.x, dy=e.clientY-homePtr.y, dt=performance.now()-homePtr.t, ui=homePtr.ui;
   homePtr=null;
-  if(ui || S.screen!=='home' || dt>700 || Math.abs(dx)<70 || Math.abs(dx)<Math.abs(dy)*1.2) return;
+  if(PORTRAIT || ui || S.screen!=='home' || dt>700 || Math.abs(dx)<70 || Math.abs(dx)<Math.abs(dy)*1.2) return;
   homeSwiped=true; setTimeout(()=>{ homeSwiped=false; }, 400);
   homeMove(dx<0?1:-1, 0);
 }, {passive:true});
