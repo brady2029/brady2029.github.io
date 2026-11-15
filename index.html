@@ -114,8 +114,6 @@ a{color:inherit;text-decoration:none}
 #stage.dark .tile .glow{background:var(--blue)}
 .tile.sel .glow{opacity:1;transform:none;transition:opacity .16s,transform .22s cubic-bezier(.3,1.6,.5,1)}
 .spin{position:absolute;inset:-50%;animation:spin 7s linear infinite}
-#stage.portrait .spin{animation-duration:36s}
-#stage.portrait .tile .spin i{filter:blur(90px)}
 #stage.dark .spin{display:none}
 .spin i{position:absolute;width:50%;height:50%;border-radius:50%;filter:blur(60px)}
 .spin i:nth-child(1){left:50%;top:0;background:#ff66b8}
@@ -521,8 +519,9 @@ body.dark:has(#stage.albumpage){background:#343434}
 #stage.portrait .resume-row{display:block;margin-bottom:44px;min-width:0}
 #stage.portrait .resume-when{display:block;font-size:30px;line-height:1.35;white-space:normal;padding-top:0;margin-bottom:8px}
 #stage.portrait .resume-tx{display:block;min-width:0}
-#stage.portrait .resume-tx b{font-size:40px;line-height:1.25;white-space:normal;flex-wrap:wrap;min-width:0}
-#stage.portrait .resume-tx b a{min-width:0}
+#stage.portrait .resume-tx b{display:block;font-size:40px;line-height:1.3;font-weight:500;white-space:normal}
+#stage.portrait .resume-tx b .ps-logo{display:inline-block;height:1em;width:auto;max-width:1.5em;margin:0 .12em 0 .28em;vertical-align:-.18em}
+#stage.portrait .resume-tx .ext{display:inline-block;width:.9em;height:.9em;margin:0 0 0 .08em;vertical-align:-.02em;opacity:.85}
 #stage.portrait .resume-body{display:block;grid-column:auto;margin-top:10px}
 #stage.portrait .resume-body p{font-size:34px;line-height:50px}
 #stage.portrait .stack .av{width:64px;height:64px;margin-left:-18px}
@@ -535,7 +534,9 @@ body.dark:has(#stage.albumpage){background:#343434}
 #stage.portrait .ps-play{order:0}
 #stage.dark.portrait .profile-board,#stage.dark.portrait .ps-main{background:#343434}
 #stage.dark.portrait .ps-play{background:#2a2a2a;border-top-color:#4a4a4a}
-#stage.portrait .ps-panel,#stage.portrait .ps-dividers,#stage.portrait .ps-rule,#stage.portrait #psSel{display:none}
+#stage.dark.portrait .ps-bio{background:#3a3a3a}
+#stage.dark.portrait .ps-rule{background:#5c5c5c}
+#stage.portrait .ps-panel,#stage.portrait .ps-dividers,#stage.portrait #psSel{display:none}
 #stage.portrait .ps-play{position:relative;width:100%;height:auto}
 #stage.portrait .ps-main{position:relative;left:auto;top:auto;right:auto;bottom:auto;width:auto;height:auto;background:#F8F8F8;padding:28px 4px 12px}
 #stage.portrait .plays{position:relative;inset:auto;display:flex;flex-direction:column;overflow:visible}
@@ -552,22 +553,27 @@ body.dark:has(#stage.albumpage){background:#343434}
 #stage.portrait .play .tx b,#stage.portrait .play .tx span{position:static;left:auto;top:auto;margin-top:0;white-space:normal}
 #stage.portrait .play .tx b{display:block;font-size:34px;line-height:1.25;overflow-wrap:break-word}
 #stage.portrait .play .tx span{display:block;margin-top:4px;font-size:28px;line-height:1.3}
-#stage.portrait .ps-ava{display:none}
-#stage.portrait .ps-name-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:0}
-#stage.portrait .ps-name{position:static;font-size:52px;line-height:1.1;min-width:0}
-#stage.portrait .ps-pencil{position:static;width:36px;height:36px}
-#stage.portrait .ps-now{display:grid;grid-template-columns:64px 1fr;column-gap:14px;row-gap:2px;align-items:center;margin-top:14px}
-#stage.portrait .ps-game{position:relative;left:auto;top:auto;width:64px;height:64px;grid-row:1 / span 3}
-#stage.portrait .ps-game.app{width:64px;height:64px;filter:none}
-#stage.portrait .ps-sub{position:static;font-size:28px;line-height:1.3;max-width:none;min-width:0;white-space:normal}
-#stage.portrait .ps-online{position:static;font-size:28px}
-#stage.portrait .ps-game-name{position:static;font-size:34px;line-height:1.25;white-space:normal;max-width:none;overflow-wrap:break-word}
-#stage.portrait .ps-social{position:relative;left:auto;top:auto;margin-top:12px;gap:14px}
-#stage.portrait .ps-social a{height:44px}
-#stage.portrait .ps-social img{height:44px}
-#stage.portrait .ps-bio{position:relative;left:auto;top:auto;width:auto;height:auto;margin-top:16px;padding:0;background:transparent;font-size:34px;line-height:48px}
-#stage.portrait .ps-bio p{margin:0 0 12px}
-#stage.portrait .ps-play{margin-top:22px;padding-top:16px;border-top:2px solid #e3e3e3}
+#stage.portrait .ps-main{position:relative;height:auto;min-height:0;padding:276px 4px 8px;background:#fff}
+#stage.portrait .ps-ava{display:block;position:absolute;left:4px;top:8px;width:248px;height:248px}
+#stage.portrait .ps-rule{display:block;position:absolute;left:272px;right:4px;width:auto;height:1px;background:#D2D2D2}
+#stage.portrait .ps-rule.r1{top:12px}
+#stage.portrait .ps-rule.r2{top:78px}
+#stage.portrait .ps-rule.r3{top:214px}
+#stage.portrait .ps-name-row{position:absolute;left:272px;right:8px;top:26px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0}
+#stage.portrait .ps-name{position:static;font-size:36px;line-height:1.15;min-width:0}
+#stage.portrait .ps-pencil{position:static;width:28px;height:28px;flex:none}
+#stage.portrait .ps-now{position:absolute;left:272px;right:8px;top:90px;display:grid;grid-template-columns:72px minmax(0,1fr);column-gap:14px;row-gap:2px;align-items:center;margin:0}
+#stage.portrait .ps-game{position:relative;left:auto;top:auto;width:72px;height:72px;grid-row:1 / span 3}
+#stage.portrait .ps-game.app{width:72px;height:72px;filter:none}
+#stage.portrait .ps-sub{position:static;font-size:26px;line-height:1.3;max-width:none;min-width:0;white-space:normal}
+#stage.portrait .ps-online{position:static;font-size:26px}
+#stage.portrait .ps-game-name{position:static;font-size:32px;line-height:1.2;white-space:normal;max-width:none;overflow-wrap:break-word}
+#stage.portrait .ps-social{position:absolute;left:272px;top:226px;margin:0;gap:14px}
+#stage.portrait .ps-social a{height:36px}
+#stage.portrait .ps-social img{height:36px}
+#stage.portrait .ps-bio{position:relative;left:auto;top:auto;width:auto;height:auto;margin:8px 0 0;padding:18px 16px;background:#F3F3F3;font-size:32px;line-height:46px}
+#stage.portrait .ps-bio p{margin:0 0 14px}
+#stage.portrait .ps-play{margin-top:18px;padding-top:4px;border-top:0;background:#fff}
 #stage.portrait .album{left:36px;right:36px;top:calc(40px + var(--safe-t));bottom:calc(150px + var(--safe-b))}
 #stage.portrait .album-head{height:auto;min-height:88px}
 #stage.portrait .album-title{font-size:56px;gap:16px}
@@ -850,18 +856,17 @@ const GALLERY = [
 ];
 
 /* One entry per app the status agent can name.
-   icon  = rounded mark on the Play Activity rows
-   cover = full-bleed art in the now-playing slot */
+   icon = the same rounded mark on Play Activity rows and the now-playing slot */
 const APPS = {
-  vscode:       { t:'Visual Studio Code', icon:'assets/apps/vscode-app.png',  cover:'assets/apps/covers/vscode.png',        url:'https://code.visualstudio.com' },
-  cursor:       { t:'Cursor',              icon:'assets/apps/cursor-app.png',  app:true, url:'https://cursor.com' },
-  spotify:      { t:'Spotify',             icon:'assets/apps/spotify-app.png', app:true, url:'https://open.spotify.com' },
-  paper:        { t:'Paper',               icon:'assets/apps/paper-app.png',   app:true, url:'https://paper.design' },
-  figma:        { t:'Figma',               icon:'assets/apps/figma-app.svg',   cover:'assets/apps/covers/figma.png',         url:'https://www.figma.com' },
-  aftereffects: { t:'Adobe After Effects', icon:'assets/apps/ae-app.png',      cover:'assets/apps/covers/aftereffects.png',  url:'https://www.adobe.com/products/aftereffects.html' },
-  premiere:     { t:'Adobe Premiere Pro',  icon:'assets/apps/premiere.png',    cover:'assets/apps/covers/premiere.png',      url:'https://www.adobe.com/products/premiere.html' },
-  blender:      { t:'Blender',             icon:'assets/apps/blender-app.png', cover:'assets/apps/covers/blender.png',       url:'https://www.blender.org' },
-  xcode:        { t:'Xcode',               icon:'assets/apps/xcode-app.png',   cover:'assets/apps/covers/xcode.png',         url:'https://developer.apple.com/xcode/' }
+  vscode:       { t:'Visual Studio Code', icon:'assets/apps/vscode-app.png',  url:'https://code.visualstudio.com' },
+  cursor:       { t:'Cursor',              icon:'assets/apps/cursor-app.png',  url:'https://cursor.com' },
+  spotify:      { t:'Spotify',             icon:'assets/apps/spotify-app.png', url:'https://open.spotify.com' },
+  paper:        { t:'Paper',               icon:'assets/apps/paper-app.png',   url:'https://paper.design' },
+  figma:        { t:'Figma',               icon:'assets/apps/figma-app.svg',   url:'https://www.figma.com' },
+  aftereffects: { t:'Adobe After Effects', icon:'assets/apps/ae-app.png',      url:'https://www.adobe.com/products/aftereffects.html' },
+  premiere:     { t:'Adobe Premiere Pro',  icon:'assets/apps/premiere.png',    url:'https://www.adobe.com/products/premiere.html' },
+  blender:      { t:'Blender',             icon:'assets/apps/blender-app.png', url:'https://www.blender.org' },
+  xcode:        { t:'Xcode',               icon:'assets/apps/xcode-app.png',   url:'https://developer.apple.com/xcode/' }
 };
 
 /* Profile page. In the paragraph, {key|Label|target} becomes an inline link with a badge.
@@ -1119,9 +1124,10 @@ function moveRowDrag(clientX, clientY){
     if(Math.abs(dy)>Math.abs(dx)*1.15){ rowDrag=null; row.style.transition=''; return false; }
     rowDrag.moved=true;
   }
-  const now=performance.now(), dt=Math.max(1, now-rowDrag.lt);
-  rowDrag.v=(clientX-rowDrag.lx)/dt*0.7+rowDrag.v*0.3;
+  const now=performance.now();
   rowDrag.lx=clientX; rowDrag.ly=clientY; rowDrag.lt=now;
+  rowDrag.hist.push({x:clientX,t:now});
+  rowDrag.hist=rowDrag.hist.filter(s=>now-s.t<120);
   const span=rowSpan();
   const x=Math.max(span.min-140, Math.min(span.max+140, rowDrag.ox+dx/rowDrag.scale));
   row._x=x;
@@ -1152,22 +1158,44 @@ function finishRowDrag(clientX, clientY){
     }
     return;
   }
-  const span=rowSpan();
-  let glide=0;
-  const speed=d.v||0;
-  if(Math.sign(speed)===Math.sign(dx) && Math.abs(speed)>0.45) glide=Math.max(-180, Math.min(180, speed/d.scale*150));
-  const x=Math.max(span.min, Math.min(span.max, (row._x||0)+glide));
-  row._x=x;
-  row.style.transition='transform .45s cubic-bezier(.16,1,.3,1)';
-  row.style.transform=`translateX(${x}px)`;
-  previewTile(nearestTile(x));
+  const hist=d.hist||[];
+  let v=0;
+  if(hist.length>=2){
+    const a=hist[0], b=hist[hist.length-1], dt=b.t-a.t;
+    if(dt>0) v=(b.x-a.x)/dt/d.scale;
+  }
+  if(Math.sign(v)!==Math.sign(dx)) v=0;
+  row.style.transition='none';
+  startRowCoast(v);
+}
+let rowCoast=0;
+function stopRowCoast(){ if(rowCoast){ cancelAnimationFrame(rowCoast); rowCoast=0; } }
+function startRowCoast(v){
+  stopRowCoast();
+  if(Math.abs(v)<0.12) return;
+  let last=performance.now();
+  const step=(now)=>{
+    const dt=Math.min(34, now-last); last=now;
+    const span=rowSpan();
+    let x=(row._x||0)+v*dt;
+    const hit=x<span.min||x>span.max;
+    x=Math.max(span.min, Math.min(span.max, x));
+    v*=Math.pow(0.993, dt);
+    row._x=x;
+    row.style.transition='none';
+    row.style.transform=`translateX(${x}px)`;
+    if(!hit && Math.abs(v)>0.035) rowCoast=requestAnimationFrame(step);
+    else rowCoast=0;
+  };
+  rowCoast=requestAnimationFrame(step);
 }
 const homeEl=$('#home');
 homeEl.addEventListener('pointerdown', e=>{
   if(!PORTRAIT || S.screen!=='home' || e.button>0) return;
   if(e.target.closest('.menu, #profile, .hints, .ctrl')) return;
   const scale=(stage.getBoundingClientRect().width/W)||1;
-  rowDrag={id:e.pointerId, x:e.clientX, y:e.clientY, lx:e.clientX, ly:e.clientY, lt:performance.now(), ox:row._x||0, scale, moved:false, v:0, tile:e.target.closest('.tile'), start:S.tile};
+  stopRowCoast();
+  rowDrag={id:e.pointerId, x:e.clientX, y:e.clientY, lx:e.clientX, ly:e.clientY, lt:performance.now(), ox:row._x||0, scale, moved:false, v:0, hist:[{x:e.clientX,t:performance.now()}], tile:e.target.closest('.tile'), start:S.tile};
   row.style.transition='none';
   try{ homeEl.setPointerCapture(e.pointerId); }catch(_){}
 });
@@ -1335,8 +1363,8 @@ function resumeRow(r){
 function resumeHead(t){ return `<h2 class="resume-h">${t}</h2>`; }
 function buildExp(){
   const scr=$('#experience');
-  $('.resume-lead',scr).innerHTML = resumeHead('Work Experience') + RESUME.work.map(resumeRow).join('');
-  $('.resume-more',scr).innerHTML = resumeHead('Activities') + RESUME.activities.map(resumeRow).join('');
+  $('.resume-lead',scr).innerHTML = resumeHead('Work Experience:') + RESUME.work.map(resumeRow).join('');
+  $('.resume-more',scr).innerHTML = resumeHead('Activities:') + RESUME.activities.map(resumeRow).join('');
   const box=$('.resume',scr);
   box.addEventListener('scroll', ()=>renderExp(), {passive:true});
   $('.scroll',scr).addEventListener('scroll', ()=>renderExp(), {passive:true});
@@ -1360,7 +1388,7 @@ function researchRow(it,i){
 }
 function buildResearch(){
   const scr=$('#research');
-  $('.resume-lead',scr).innerHTML = resumeHead('Research') + RESEARCH.map(researchRow).join('');
+  $('.resume-lead',scr).innerHTML = resumeHead('Research:') + RESEARCH.map(researchRow).join('');
   $('.resume',scr).addEventListener('scroll', researchMore, {passive:true});
   $('.scroll',scr).addEventListener('scroll', researchMore, {passive:true});
   researchMore();
@@ -1961,7 +1989,6 @@ const LIVE_TILE = (bg, fg, glyph) => 'data:image/svg+xml,' + encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 98 107"><rect width="98" height="107" fill="${bg}"/>${glyph.replace(/FG/g, fg)}</svg>`);
 const LIVE_IDLE = LIVE_TILE('#e9e9e9','#9a9a9a','<path d="M49 30 24 51h7v24h13V61h10v14h13V51h7z" fill="FG"/>');
 const SPOTIFY_ICON = 'assets/apps/spotify-app.png';
-const liveLetter = t => LIVE_TILE('#1e1e1e','#fff',`<text x="49" y="66" font-family="system-ui,sans-serif" font-size="40" font-weight="700" text-anchor="middle" fill="FG">${esc(t[0])}</text>`);
 
 function liveDur(sec){
   const m = Math.floor(sec/60), h = Math.floor(m/60), mm = m%60;
@@ -1998,8 +2025,7 @@ function liveRender(){
   const listening = fresh && d.spotify && d.spotify.track;
   if(playing){
     const a = APPS[d.app];
-    if(a.app){ cover = a.icon; kind = 'app'; }
-    else { cover = a.cover || liveLetter(a.t); kind = 'art'; }
+    cover = a.icon; kind = 'app';
     state = 'on'; title = a.t; line = liveDur(since(d.appSince));
   } else if(listening){
     cover = SPOTIFY_ICON; kind = 'app';
@@ -2009,8 +2035,7 @@ function liveRender(){
     const key = d && (d.last || d.app);
     const a = key && key !== 'spotify' && APPS[key];
     if(a){
-      if(a.app){ cover = a.icon; kind = 'app'; }
-      else { cover = a.cover || liveLetter(a.t); kind = 'art'; }
+      cover = a.icon; kind = 'app';
       title = a.t;
     } else if(key === 'spotify'){
       cover = SPOTIFY_ICON; kind = 'app'; title = 'Spotify';
