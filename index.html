@@ -115,6 +115,10 @@ a{color:inherit;text-decoration:none}
 .tile.sel .glow{opacity:1;transform:none;transition:opacity .16s,transform .22s cubic-bezier(.3,1.6,.5,1)}
 .spin{position:absolute;inset:-50%;animation:spin 7s linear infinite}
 #stage.portrait .spin{animation:none;transform:rotate(18deg)}
+#stage.portrait .tile .glow .spin,
+#stage.portrait .mi .ring .spin{display:none}
+#stage.portrait:not(.dark) .tile.sel .glow .spin,
+#stage.portrait:not(.dark) .mi.sel .ring .spin{display:block}
 #stage.portrait .tile{border-radius:31px}
 #stage.portrait .tile .img{border-radius:31px}
 #stage.portrait .tile .glow{border-radius:38px;clip-path:inset(0 round 38px)}
@@ -576,7 +580,7 @@ body.dark:has(#stage.albumpage){background:#343434}
 #stage.portrait .play .tx b,#stage.portrait .play .tx span{position:static;left:auto;top:auto;margin-top:0;white-space:normal}
 #stage.portrait .play .tx b{display:block;font-size:34px;line-height:1.25;overflow-wrap:break-word}
 #stage.portrait .play .tx span{display:block;margin-top:4px;font-size:28px;line-height:1.3}
-#stage.portrait .ps-main{position:relative;height:auto;min-height:0;padding:276px 4px 8px;background:#fff}
+#stage.portrait .ps-main{position:relative;height:auto;min-height:0;padding:264px 4px 8px;background:#fff}
 #stage.portrait .ps-ava{display:block;position:absolute;left:4px;top:8px;width:248px;height:248px}
 #stage.portrait .ps-rule{display:block;position:absolute;left:272px;right:4px;width:auto;height:1px;background:#D2D2D2}
 #stage.portrait .ps-rule.r1{top:12px}
@@ -591,9 +595,8 @@ body.dark:has(#stage.albumpage){background:#343434}
 #stage.portrait .ps-sub{position:static;font-size:26px;line-height:1.3;max-width:none;min-width:0;white-space:normal}
 #stage.portrait .ps-online{position:static;font-size:26px}
 #stage.portrait .ps-game-name{position:static;font-size:32px;line-height:1.2;white-space:normal;max-width:none;overflow-wrap:break-word}
-#stage.portrait .ps-social{position:absolute;left:272px;top:226px;margin:0;gap:14px}
-#stage.portrait .ps-social a{height:36px}
-#stage.portrait .ps-social img{height:36px}
+#stage.portrait .ps-social{display:none}
+#stage.portrait .ps-rule.r3{display:none}
 #stage.portrait .ps-bio{position:relative;left:auto;top:auto;width:auto;height:auto;margin:8px 0 0;padding:18px 16px;background:#F3F3F3;font-size:32px;line-height:46px}
 #stage.portrait .ps-bio p{margin:0 0 14px}
 #stage.portrait .ps-play{margin-top:18px;padding-top:4px;border-top:0;background:#fff}
@@ -1293,6 +1296,7 @@ function showHome(boot){
   const h=$('#home'); h.classList.add('on'); h.classList.remove('under'); h.inert=false;
   $('#chrome').inert=false;
   if(boot){ h.classList.remove('boot'); void h.offsetWidth; h.classList.add('boot'); SFX.boot(); setTimeout(()=>h.classList.remove('boot'),700); }
+  $$('video').forEach(v=>{ if(!v.paused) v.pause(); });
   renderSel();
 }
 function settleUnderSleep(){
@@ -1543,7 +1547,7 @@ function projectRow(p){
   if(/\.(mp4|webm|mov)$/i.test(p.media||'')){
     const post=p.poster?` poster="${esc(p.poster)}"`:'';
     const sound=p.sound?' data-sound="1"':'';
-    side=`<video class="proj-mini" src="${esc(p.media)}"${post}${sound} autoplay muted loop playsinline></video>`;
+    side=`<video class="proj-mini" src="${esc(p.media)}"${post}${sound} muted loop playsinline preload="none"></video>`;
   } else if(p.shots&&p.shots.length){
     const thumbs=p.shots.map(s=>`<img src="${esc(s)}" alt="">`).join('');
     side=`<button class="proj-shots" type="button" data-shots="${esc(p.shots.join('|'))}"><span class="proj-shotrow">${thumbs}</span><span>See all ${p.shots.length}</span></button>`;
@@ -1676,6 +1680,7 @@ function back(){
   const cur=$('#'+S.screen);
   if(!cur || cur.classList.contains('applet-out')) return;
   SFX.back(); buzz(6);
+  $$('video', cur).forEach(v=>{ if(!v.paused) v.pause(); });
   if(matchMedia('(prefers-reduced-motion: reduce)').matches){ showHome(false); return; }
   const gen=++navGen;
   cur.classList.remove('applet-in');
@@ -2033,6 +2038,7 @@ window.addEventListener('keydown', e=>{
 let padPrev={}, padRepeat={}, padOn=false;
 function pollPad(ts){
   const pads=navigator.getGamepads?navigator.getGamepads():[]; const p=[...pads].find(Boolean);
+  if(!p){ stopPad(); return; }
   if(p){
     if(!padOn){ padOn=true; $('#ctrl').classList.add('pad'); toast('Controller connected'); }
     const ax=p.axes[0]||0, ay=p.axes[1]||0, B=i=>p.buttons[i]&&p.buttons[i].pressed;
@@ -2056,10 +2062,17 @@ function pollPad(ts){
     padPrev.L=btn.L; padPrev.R=btn.R;
     padPrev.ok=btn.ok; padPrev.back=btn.back;
   }
-  requestAnimationFrame(pollPad);
+  padRAF=requestAnimationFrame(pollPad);
 }
-window.addEventListener('gamepadconnected', ()=>{});
-requestAnimationFrame(pollPad);
+let padRAF=0;
+function stopPad(){
+  if(padRAF){ cancelAnimationFrame(padRAF); padRAF=0; }
+  if(padOn){ padOn=false; const c=$('#ctrl'); if(c) c.classList.remove('pad'); }
+}
+function startPad(){ if(!padRAF) padRAF=requestAnimationFrame(pollPad); }
+window.addEventListener('gamepadconnected', startPad);
+window.addEventListener('gamepaddisconnected', stopPad);
+if(navigator.getGamepads && [...navigator.getGamepads()].some(Boolean)) startPad();
 
 /* swipe back on touch (detail screens) */
 let sx=0, sy=0;
