@@ -114,7 +114,13 @@ a{color:inherit;text-decoration:none}
 #stage.dark .tile .glow{background:var(--blue)}
 .tile.sel .glow{opacity:1;transform:none;transition:opacity .16s,transform .22s cubic-bezier(.3,1.6,.5,1)}
 .spin{position:absolute;inset:-50%;animation:spin 7s linear infinite}
-#stage.portrait .spin{animation:none}
+#stage.portrait .spin{animation:none;transform:rotate(18deg)}
+#stage.portrait .tile{border-radius:31px}
+#stage.portrait .tile .img{border-radius:31px}
+#stage.portrait .tile .glow{border-radius:38px;clip-path:inset(0 round 38px)}
+#stage.portrait .tile.sel .glow{transform:translateZ(0)}
+#stage.portrait .mi .ring{clip-path:inset(0 round 50%)}
+#stage.portrait .mi.sel .ring{transform:translateZ(0)}
 #stage.portrait .tile .glow .spin i{filter:blur(calc(var(--t) * .22))}
 #stage.dark .spin{display:none}
 .spin i{position:absolute;width:50%;height:50%;border-radius:50%;filter:blur(60px)}
