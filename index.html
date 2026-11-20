@@ -428,10 +428,11 @@ body.dark:has(#stage.albumpage){background:#343434}
 /* photo modal — tile expands to a large card */
 #viewer{position:absolute;inset:0;z-index:40;display:none}
 #viewer.on{display:block}
+#stage:has(#viewer.on) #chrome{visibility:hidden;opacity:0;pointer-events:none!important;transition:none}
 #viewer .viewer-back{
   position:absolute;inset:0;padding:0;cursor:zoom-out;outline:none;
-  background-color:rgba(6,6,8,.92);
-  background-image:radial-gradient(80% 55% at 50% 0%, rgba(255,255,255,.1), transparent 70%);
+  background-color:#0a0a0c;
+  background-image:radial-gradient(80% 55% at 50% 0%, rgba(255,255,255,.08), transparent 70%);
   opacity:0;transition:opacity .42s ease;
 }
 #viewer.show .viewer-back{opacity:1}
@@ -456,6 +457,18 @@ body.dark:has(#stage.albumpage){background:#343434}
 #viewer.show .viewer-x{opacity:1}
 #viewer .viewer-x:hover{background:rgba(0,0,0,.72)}
 #viewer .viewer-x svg{width:32px;height:32px;display:block}
+#viewer .viewer-bar{
+  position:absolute;z-index:3;left:48px;bottom:40px;display:none;align-items:center;gap:28px;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;
+}
+#viewer.video.show .viewer-bar{display:flex;opacity:1;pointer-events:auto}
+#viewer.closing .viewer-bar{opacity:0;pointer-events:none;transition:opacity .15s ease}
+#viewer .viewer-hint{
+  display:flex;align-items:center;gap:10px;font-size:30px;letter-spacing:-.3px;color:#fff;
+  background:none;border:0;padding:0;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent;
+}
+#viewer .viewer-hint svg{width:48px;height:48px;display:block;transition:transform .1s;flex:none}
+#viewer .viewer-hint:active svg{transform:scale(.88)}
 #sleep{position:absolute;inset:0;z-index:50;background:#000;opacity:0;pointer-events:none;transition:opacity .7s ease;cursor:pointer}
 #sleep:focus{outline:none}
 #stage.asleep #sleep{opacity:.96;pointer-events:auto}
@@ -630,6 +643,9 @@ body.dark:has(#stage.albumpage){background:#343434}
 #stage.portrait .viewer-x{top:calc(28px + var(--safe-t));right:calc(28px + var(--safe-r));width:120px;height:120px}
 #stage.portrait .viewer-x svg{width:46px;height:46px}
 #stage.portrait .viewer-cap{font-size:38px}
+#stage.portrait #viewer .viewer-bar{left:calc(40px + var(--safe-l));bottom:calc(36px + var(--safe-b));gap:32px}
+#stage.portrait #viewer .viewer-hint{font-size:40px;gap:12px;min-height:80px}
+#stage.portrait #viewer .viewer-hint svg{width:64px;height:64px}
 
 
 #stage.portrait .thumb .cover .cn{font-size:24px}
@@ -752,6 +768,10 @@ body.dark:has(#stage.albumpage){background:#343434}
     <div class="viewer-card"><img alt="" draggable="false" /><video playsinline></video></div>
     <div class="viewer-cap"></div>
     <button class="viewer-x" type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+    <div class="viewer-bar" aria-label="Video controls">
+      <button class="viewer-hint" id="viewerMute" type="button" aria-label="Mute Site"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" fill="#fff"/><text x="24" y="31" text-anchor="middle" font-family="system-ui,sans-serif" font-size="21" font-weight="700" fill="#111">M</text></svg><span>Mute Site</span></button>
+      <button class="viewer-hint" id="viewerBack" type="button" aria-label="Go Back"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" fill="#fff"/><text x="24" y="31" text-anchor="middle" font-family="system-ui,sans-serif" font-size="21" font-weight="700" fill="#111">B</text></svg><span>Go Back</span></button>
+    </div>
   </div>
   <div id="toast"></div>
   <div id="sleep" role="button" tabindex="0" aria-label="Wake"></div>
@@ -1306,7 +1326,27 @@ function setBackHint(home, label){
   b.dataset.mode = home ? 'mute' : 'back';
   b.innerHTML = (home ? HINT_M : HINT_PLUS) + (home ? 'Mute Site' : label);
 }
-function toggleMute(){ SFX.muted=!SFX.muted; toast(SFX.muted?'Sound Off':'Sound On'); }
+let viewerWantsSound=false;
+function syncViewerMuteBtn(){
+  const btn=$('#viewerMute'); if(!btn) return;
+  const label=SFX.muted?'Unmute Site':'Mute Site';
+  const span=$('span', btn); if(span) span.textContent=label;
+  btn.setAttribute('aria-label', label);
+}
+function syncViewerAudio(){
+  const v=$('#viewer');
+  if(!v || !v.classList.contains('on') || !v.classList.contains('video')) return;
+  const vid=$('video', v); if(!vid) return;
+  const allow=viewerWantsSound && !SFX.muted;
+  vid.muted=!allow;
+  if(allow) vid.volume=1;
+}
+function toggleMute(){
+  SFX.muted=!SFX.muted;
+  toast(SFX.muted?'Sound Off':'Sound On');
+  syncViewerMuteBtn();
+  syncViewerAudio();
+}
 let navGen=0, sleepTimer=0, swallowUntil=0;
 function showHome(boot){
   S.screen='home'; setRed(false); stage.classList.remove('userpage','newspage','albumpage','at-end'); $('#hintLR').hidden=true;
@@ -1911,10 +1951,12 @@ let shotSet=null, shotAt=0, swipeDir=0;
 function openVideoViewer(src, fromEl, opt){
   const v=$('#viewer');
   const token=++viewToken;
-  const sound=!!(opt&&opt.sound);
+  viewerWantsSound=!!(opt&&opt.sound);
+  const allowSound=viewerWantsSound && !SFX.muted;
   const card=$('.viewer-card', v), vid=$('video', card);
   v.classList.add('video');
   v.classList.remove('closing');
+  syncViewerMuteBtn();
   const start=()=>{
     if(token!==viewToken) return;
     const to=videoBox(vid.videoWidth||16, vid.videoHeight||9);
@@ -1936,17 +1978,21 @@ function openVideoViewer(src, fromEl, opt){
     const play=()=>{
       if(token!==viewToken) return;
       vid.loop=true;
-      vid.muted=!sound;
+      vid.muted=!allowSound;
       vid.volume=1;
       const p=vid.play();
-      if(p) p.catch(()=>{ if(!sound) return; vid.muted=true; vid.play().catch(()=>{}); });
+      if(p) p.catch(()=>{ if(!allowSound) return; vid.muted=true; vid.play().catch(()=>{}); });
     };
     play();
     requestAnimationFrame(play);
   };
   if(!v.classList.contains('on')) SFX.open();
   if(vid.dataset.src!==src){ vid.dataset.src=src; vid.src=src; }
-  if(sound){ vid.muted=false; vid.volume=1; vid.loop=true; const p=vid.play(); if(p) p.catch(()=>{}); }
+  vid.loop=true;
+  vid.muted=!allowSound;
+  vid.volume=1;
+  /* always kick playback (muted is fine) so metadata loads even when Mute Site is on */
+  const kick=vid.play(); if(kick) kick.catch(()=>{});
   if(vid.readyState>=1 && vid.dataset.src===src) start();
   else { vid.onloadedmetadata=start; vid.onerror=start; }
 }
@@ -2058,6 +2104,7 @@ function closeViewer(){
     card.style.transform='';
     v.classList.remove('on','closing','show','settled','video');
     shotSet=null;
+    viewerWantsSound=false;
     markSource(null);
     document.querySelectorAll('.proj-mini').forEach(m=>{ if(m.paused) m.play().catch(()=>{}); });
   };
@@ -2081,6 +2128,8 @@ let viewerGesture=0, viewerSlide=0;
 function viewerMayClose(){ if(performance.now()-viewerGesture<420) return; closeViewer(); }
 $('#viewer .viewer-back').addEventListener('click', viewerMayClose);
 $('#viewer .viewer-x').addEventListener('click', closeViewer);
+$('#viewerMute').addEventListener('click', e=>{ e.stopPropagation(); SFX.init(); toggleMute(); });
+$('#viewerBack').addEventListener('click', e=>{ e.stopPropagation(); SFX.init(); closeViewer(); });
 (function(){
   let x=0, y=0, on=false;
   const v=$('#viewer');
@@ -2129,7 +2178,7 @@ $('#viewer .viewer-x').addEventListener('click', closeViewer);
   v.addEventListener('pointerdown', e=>{
     if(!PORTRAIT || !v.classList.contains('on') || v.classList.contains('closing')) return;
     if(e.button!==0 || !e.isPrimary) return;
-    if(e.target.closest && e.target.closest('.viewer-x')) return;
+    if(e.target.closest && e.target.closest('.viewer-x, .viewer-bar')) return;
     const c=card();
     c.getAnimations().forEach(a=>a.cancel());
     c.style.transform='';
