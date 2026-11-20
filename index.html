@@ -48,9 +48,10 @@ a{color:inherit;text-decoration:none}
 #stage.dark #projects{background:#343434}
 #gallery{background:#ececec}
 #stage.dark.albumpage #gallery{background:#343434}
-.screen.applet-in{z-index:4;animation:screenFade .18s ease both}
-.screen.applet-out{z-index:6;pointer-events:none;animation:screenFade .16s ease reverse both}
+.screen.on.applet-in{z-index:4;opacity:0;animation:screenFade .2s ease forwards}
+.screen.on.applet-out{z-index:6;pointer-events:none;opacity:1;animation:screenFadeOut .16s ease forwards}
 @keyframes screenFade{from{opacity:0}to{opacity:1}}
+@keyframes screenFadeOut{from{opacity:1}to{opacity:0}}
 .box{position:absolute;width:1920px;height:1080px;left:calc(50% - 960px);top:calc(50% - 540px)}
 
 /* ============ sleep: home is already on, dimmed ============ */
@@ -1312,8 +1313,17 @@ function showHome(boot){
   setBackHint(true);
   const okLbl=$('#hintOk').lastChild; if(okLbl) okLbl.textContent='OK';
   document.querySelector('meta[name=theme-color]').content = stage.classList.contains('dark')?'#343434':'#e9e9e9';
-  $$('.screen').forEach(s=>{ s.classList.remove('on','enter','applet-in','applet-out'); s.style.zIndex=''; });
-  const h=$('#home'); h.classList.add('on'); h.classList.remove('under'); h.inert=false;
+  const h=$('#home');
+  /* keep home painted the whole time — stripping .on first is what flashed the stage */
+  $$('.screen').forEach(s=>{
+    if(s===h) return;
+    s.classList.remove('on','enter','applet-in','applet-out');
+    s.style.zIndex='';
+  });
+  h.classList.add('on');
+  h.classList.remove('under','enter','applet-in','applet-out');
+  h.style.zIndex='';
+  h.inert=false;
   $('#chrome').inert=false;
   if(boot){ h.classList.remove('boot'); void h.offsetWidth; h.classList.add('boot'); SFX.boot(); setTimeout(()=>h.classList.remove('boot'),700); }
   $$('video').forEach(v=>{ if(!v.paused) v.pause(); });
@@ -1390,14 +1400,14 @@ function btnHTML(b){
 }
 function mediaHTML(m){
   if(!m) return '';
-  return /\.(mp4|webm|mov)$/i.test(m) ? `<video src="${m}" autoplay muted loop playsinline></video>` : `<img src="${m}" alt="">`;
+  return /\.(mp4|webm|mov)$/i.test(m) ? `<video src="${m}" muted loop playsinline preload="none"></video>` : `<img src="${m}" alt="">`;
 }
 function thumbMedia(p){
   const m=p.thumb||p.media;
   if(!m) return '';
   if(/\.(mp4|webm|mov)$/i.test(m)){
     const post=p.poster?` poster="${esc(p.poster)}"`:'';
-    return `<video src="${esc(m)}"${post} autoplay muted loop playsinline preload="auto"></video>`;
+    return `<video src="${esc(m)}"${post} muted loop playsinline preload="none"></video>`;
   }
   return `<img src="${esc(m)}" alt="">`;
 }
@@ -1709,16 +1719,26 @@ function openScreen(id){
   setBackHint(false, id==='about' ? 'Back' : 'Return Back');
   const okLbl=$('#hintOk').lastChild; if(okLbl) okLbl.textContent = 'OK';
   document.querySelector('meta[name=theme-color]').content = id==='gallery' ? (stage.classList.contains('dark')?'#343434':'#ececec') : (stage.classList.contains('dark')?'#343434':'#e9e9e9');
-  $$('.screen').forEach(s=>{ if(s.id!=='home'){ s.classList.remove('on','enter','applet-in','applet-out'); s.style.zIndex=''; } });
-  $$('video', $('#'+id)).forEach(v=>v.play().catch(()=>{}));
-  const home=$('#home'); home.classList.add('on','under'); home.inert=true;
+  const home=$('#home');
   const scr=$('#'+id);
+  $$('.screen').forEach(s=>{
+    if(s===home || s===scr) return;
+    s.classList.remove('on','enter','applet-in','applet-out');
+    s.style.zIndex='';
+  });
+  home.classList.add('on','under'); home.inert=true;
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  scr.classList.remove('applet-out');
-  scr.classList.add('on');
-  if(!reduce){
-    scr.classList.add('applet-in');
-    scr.addEventListener('animationend', e=>{ if(e.target===scr) scr.classList.remove('applet-in'); }, {once:true});
+  scr.classList.remove('applet-out','enter');
+  if(reduce){
+    scr.classList.remove('applet-in');
+    scr.classList.add('on');
+  } else {
+    /* add on + applet-in together so .on.applet-in {opacity:0} wins before first paint */
+    scr.classList.add('on','applet-in');
+    scr.addEventListener('animationend', e=>{
+      if(e.target!==scr || S.screen!==id) return;
+      scr.classList.remove('applet-in');
+    }, {once:true});
   }
   const sc=$('.scroll',scr); if(sc){ sc.scrollTop=0; if(PORTRAIT) noteScroll(sc); }
   if(id==='experience') renderExp(false);
@@ -1727,6 +1747,14 @@ function openScreen(id){
   if(id==='about'){ S.idx.about=-1; fitProfile(); renderAbout(); }
   if(id==='gallery') renderGallery(false);
   renderSel();
+  /* defer media so the fade isn't blocked by video decode */
+  requestAnimationFrame(()=>{
+    if(S.screen!==id) return;
+    $$('video', scr).forEach(v=>{
+      if(v.classList.contains('proj-mini')) return;
+      v.play().catch(()=>{});
+    });
+  });
 }
 function back(){
   if($('#viewer').classList.contains('on')){ closeViewer(); return; }
@@ -1740,9 +1768,15 @@ function back(){
   cur.classList.remove('applet-in');
   cur.classList.add('applet-out');
   const home=$('#home'); home.classList.add('on','under'); home.inert=true;
-  const finish=()=>{ if(gen!==navGen) return; navGen++; showHome(false); };
-  cur.addEventListener('animationend', e=>{ if(e.target===cur) finish(); });
-  setTimeout(finish, 260);
+  let done=false;
+  const finish=()=>{
+    if(done || gen!==navGen) return;
+    done=true;
+    navGen++;
+    showHome(false);
+  };
+  cur.addEventListener('animationend', e=>{ if(e.target===cur) finish(); }, {once:true});
+  setTimeout(finish, 220);
 }
 function tabStep(dir){
   if(S.screen!=='projects') return false;
